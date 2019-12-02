@@ -2,16 +2,15 @@ import pytest
 
 from clikit.io import NullIO
 
-from poetry.packages import dependency_from_pep_508
 from poetry.packages import ProjectPackage
+from poetry.packages import dependency_from_pep_508
+from poetry.puzzle import Solver
+from poetry.puzzle.exceptions import SolverProblemError
 from poetry.repositories.installed_repository import InstalledRepository
 from poetry.repositories.pool import Pool
 from poetry.repositories.repository import Repository
-from poetry.puzzle import Solver
-from poetry.puzzle.exceptions import SolverProblemError
 from poetry.utils._compat import Path
 from poetry.version.markers import parse_marker
-
 from tests.helpers import get_dependency
 from tests.helpers import get_package
 from tests.repositories.test_legacy_repository import (
@@ -430,7 +429,7 @@ def test_solver_returns_extras_if_requested(solver, repo, package):
 def test_solver_returns_prereleases_if_requested(solver, repo, package):
     package.add_dependency("A")
     package.add_dependency("B")
-    package.add_dependency("C", {"version": "*", "allows-prereleases": True})
+    package.add_dependency("C", {"version": "*", "allow-prereleases": True})
 
     package_a = get_package("A", "1.0")
     package_b = get_package("B", "1.0")
@@ -928,6 +927,11 @@ def test_solver_can_resolve_git_dependencies(solver, repo, package):
         ],
     )
 
+    op = ops[1]
+
+    assert op.package.source_type == "git"
+    assert op.package.source_reference.startswith("9cf87a2")
+
 
 def test_solver_can_resolve_git_dependencies_with_extras(solver, repo, package):
     pendulum = get_package("pendulum", "2.0.3")
@@ -949,6 +953,37 @@ def test_solver_can_resolve_git_dependencies_with_extras(solver, repo, package):
             {"job": "install", "package": get_package("demo", "0.1.2")},
         ],
     )
+
+
+@pytest.mark.parametrize(
+    "ref",
+    [{"branch": "a-branch"}, {"tag": "a-tag"}, {"rev": "9cf8"}],
+    ids=["branch", "tag", "rev"],
+)
+def test_solver_can_resolve_git_dependencies_with_ref(solver, repo, package, ref):
+    pendulum = get_package("pendulum", "2.0.3")
+    cleo = get_package("cleo", "1.0.0")
+    repo.add_package(pendulum)
+    repo.add_package(cleo)
+
+    git_config = {"git": "https://github.com/demo/demo.git"}
+    git_config.update(ref)
+    package.add_dependency("demo", git_config)
+
+    ops = solver.solve()
+
+    check_solver_result(
+        ops,
+        [
+            {"job": "install", "package": pendulum},
+            {"job": "install", "package": get_package("demo", "0.1.2")},
+        ],
+    )
+
+    op = ops[1]
+
+    assert op.package.source_type == "git"
+    assert op.package.source_reference.startswith("9cf87a2")
 
 
 def test_solver_does_not_trigger_conflict_for_python_constraint_if_python_requirement_is_compatible(
@@ -1773,5 +1808,29 @@ def test_solver_discards_packages_with_empty_markers(
         [
             {"job": "install", "package": package_c},
             {"job": "install", "package": package_a},
+        ],
+    )
+
+
+def test_solver_does_not_raise_conflict_for_conditional_dev_dependencies(
+    solver, repo, package
+):
+    package.python_versions = "~2.7 || ^3.5"
+    package.add_dependency("A", {"version": "^1.0", "python": "~2.7"}, category="dev")
+    package.add_dependency("A", {"version": "^2.0", "python": "^3.5"}, category="dev")
+
+    package_a100 = get_package("A", "1.0.0")
+    package_a200 = get_package("A", "2.0.0")
+
+    repo.add_package(package_a100)
+    repo.add_package(package_a200)
+
+    ops = solver.solve()
+
+    check_solver_result(
+        ops,
+        [
+            {"job": "install", "package": package_a100},
+            {"job": "install", "package": package_a200},
         ],
     )

@@ -3,15 +3,13 @@ from __future__ import unicode_literals
 import contextlib
 import hashlib
 import os
-import re
-import tempfile
 import shutil
 import stat
+import tempfile
 import zipfile
 
 from base64 import urlsafe_b64encode
 from io import StringIO
-from typing import Set
 
 from clikit.api.io.flags import VERY_VERBOSE
 
@@ -19,6 +17,8 @@ from poetry.__version__ import __version__
 from poetry.semver import parse_constraint
 from poetry.utils._compat import decode
 
+from ..utils.helpers import escape_name
+from ..utils.helpers import escape_version
 from ..utils.helpers import normalize_file_permissions
 from ..utils.package_include import PackageInclude
 from ..utils.tags import get_abbr_impl
@@ -206,8 +206,8 @@ class WheelBuilder(Builder):
     @property
     def wheel_filename(self):  # type: () -> str
         return "{}-{}-{}.whl".format(
-            re.sub(r"[^\w\d.]+", "_", self._package.pretty_name, flags=re.UNICODE),
-            re.sub(r"[^\w\d.\+]+", "_", self._meta.version, flags=re.UNICODE),
+            escape_name(self._package.pretty_name),
+            escape_version(self._meta.version),
             self.tag,
         )
 
@@ -217,8 +217,8 @@ class WheelBuilder(Builder):
         )
 
     def dist_info_name(self, distribution, version):  # type: (...) -> str
-        escaped_name = re.sub(r"[^\w\d.]+", "_", distribution, flags=re.UNICODE)
-        escaped_version = re.sub(r"[^\w\d.+]+", "_", version, flags=re.UNICODE)
+        escaped_name = escape_name(distribution)
+        escaped_version = escape_version(version)
 
         return "{}-{}.dist-info".format(escaped_name, escaped_version)
 

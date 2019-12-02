@@ -5,10 +5,9 @@ from cleo import argument
 from cleo import option
 
 from poetry.factory import Factory
-from poetry.utils.helpers import (
-    keyring_repository_password_del,
-    keyring_repository_password_set,
-)
+from poetry.utils.helpers import keyring_repository_password_del
+from poetry.utils.helpers import keyring_repository_password_set
+
 from .command import Command
 
 
@@ -42,11 +41,10 @@ To remove a repository (repo is a short alias for repositories):
 
     @property
     def unique_config_values(self):
+        from poetry.config.config import boolean_normalizer
+        from poetry.config.config import boolean_validator
         from poetry.locations import CACHE_DIR
         from poetry.utils._compat import Path
-
-        boolean_validator = lambda val: val in {"true", "false", "1", "0"}
-        boolean_normalizer = lambda val: val in ["true", "1"]
 
         unique_config_values = {
             "cache-dir": (
@@ -225,6 +223,27 @@ To remove a repository (repo is a short alias for repositories):
                 config.auth_config_source.add_property(
                     "{}.{}".format(m.group(1), m.group(2)), token
                 )
+
+            return 0
+
+        # handle certs
+        m = re.match(
+            r"(?:certificates)\.([^.]+)\.(cert|client-cert)", self.argument("key")
+        )
+        if m:
+            if self.option("unset"):
+                config.auth_config_source.remove_property(
+                    "certificates.{}.{}".format(m.group(1), m.group(2))
+                )
+
+                return 0
+
+            if len(values) == 1:
+                config.auth_config_source.add_property(
+                    "certificates.{}.{}".format(m.group(1), m.group(2)), values[0]
+                )
+            else:
+                raise ValueError("You must pass exactly 1 value")
 
             return 0
 

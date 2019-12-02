@@ -2,11 +2,11 @@ from typing import Optional
 
 import poetry.packages
 
-from poetry.semver import parse_constraint
 from poetry.semver import Version
 from poetry.semver import VersionConstraint
 from poetry.semver import VersionRange
 from poetry.semver import VersionUnion
+from poetry.semver import parse_constraint
 from poetry.utils.helpers import canonicalize_name
 from poetry.version.markers import AnyMarker
 from poetry.version.markers import parse_marker
@@ -144,9 +144,10 @@ class Dependency(object):
             requirement += "[{}]".format(",".join(self.extras))
 
         if isinstance(self.constraint, VersionUnion):
-            requirement += " ({})".format(
-                ",".join([str(c).replace(" ", "") for c in self.constraint.ranges])
-            )
+            if self.constraint.excludes_single_version():
+                requirement += " ({})".format(str(self.constraint))
+            else:
+                requirement += " ({})".format(self.pretty_constraint)
         elif isinstance(self.constraint, Version):
             requirement += " (=={})".format(self.constraint.text)
         elif not self.constraint.is_any():

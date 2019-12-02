@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from clikit.io import NullIO
 from email.parser import Parser
+
+from clikit.io import NullIO
 
 from poetry.factory import Factory
 from poetry.masonry.builders.builder import Builder
@@ -88,6 +89,7 @@ def test_get_metadata_content():
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Software Development :: Build Tools",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ]

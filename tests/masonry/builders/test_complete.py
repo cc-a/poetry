@@ -3,13 +3,14 @@ from __future__ import unicode_literals
 
 import ast
 import os
-import pytest
 import re
 import shutil
 import sys
 import tarfile
-import zipfile
 import tempfile
+import zipfile
+
+import pytest
 
 from clikit.io import NullIO
 
@@ -19,6 +20,7 @@ from poetry.masonry.builders import CompleteBuilder
 from poetry.utils._compat import Path
 from poetry.utils._compat import decode
 from poetry.utils.env import NullEnv
+
 
 fixtures_dir = Path(__file__).parent / "fixtures"
 
@@ -79,7 +81,7 @@ def test_wheel_c_extension():
 Wheel-Version: 1.0
 Generator: poetry {}
 Root-Is-Purelib: false
-Tag: cp[23]\\d-cp[23]\\dmu?-.+
+Tag: cp[23]\\d-cp[23]\\dm?u?-.+
 $""".format(
                     __version__
                 ),
@@ -136,7 +138,7 @@ def test_wheel_c_extension_src_layout():
 Wheel-Version: 1.0
 Generator: poetry {}
 Root-Is-Purelib: false
-Tag: cp[23]\\d-cp[23]\\dmu?-.+
+Tag: cp[23]\\d-cp[23]\\dm?u?-.+
 $""".format(
                     __version__
                 ),
@@ -216,6 +218,7 @@ Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
 Classifier: Topic :: Software Development :: Build Tools
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Provides-Extra: time
@@ -318,6 +321,7 @@ Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
 Classifier: Topic :: Software Development :: Build Tools
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Provides-Extra: time

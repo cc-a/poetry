@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import pytest
 
-from poetry.io.null_io import NullIO
 from poetry.factory import Factory
 from poetry.utils._compat import PY2
 from poetry.utils._compat import Path
@@ -107,6 +106,7 @@ def test_create_poetry():
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Software Development :: Build Tools",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ]
